@@ -1,8 +1,6 @@
 import yaml
 import copy
 
-from redis import StrictRedis, ConnectionError
-
 from .exceptions import RequestsRespectfulConfigError
 
 try:
@@ -62,12 +60,3 @@ try:
         )
 except FileNotFoundError:
     config = copy.deepcopy(default_config)
-
-
-# REDIS CLIENT
-redis = StrictRedis(
-    host=config["redis"]["host"],
-    port=config["redis"]["port"],
-    password=config["redis"]["password"],
-    db=config["redis"]["database"]
-)

@@ -1,4 +1,4 @@
-from .globals import default_config, config, redis
+from .globals import default_config, config
 from .exceptions import RequestsRespectfulError, RequestsRespectfulConfigError, RequestsRespectfulRateLimitedError, RequestsRespectfulRedisError
 
 from redis import StrictRedis, ConnectionError
@@ -15,7 +15,16 @@ import warnings
 class RespectfulRequester:
 
     def __init__(self):
-        self.redis = redis
+        self.redis = StrictRedis(
+            host=config["redis"]["host"],
+            port=config["redis"]["port"],
+            password=config["redis"]["password"],
+            db=config["redis"]["database"])
+
+        try:
+            self.redis.echo("Testing Connection")
+        except ConnectionError:
+            raise RequestsRespectfulRedisError("Could not establish a connection to the provided Redis server")
 
         try:
             self.redis.echo("Testing Connection")
@@ -111,7 +120,7 @@ class RespectfulRequester:
             if type(kwargs["redis"]) != dict:
                 raise RequestsRespectfulConfigError("'redis' key must be a dict")
 
-            expected_redis_keys = ["host", "port", "database"]
+            expected_redis_keys = ["host", "port", "password", "database"]
             missing_redis_keys = list()
 
             for expected_redis_key in expected_redis_keys:
